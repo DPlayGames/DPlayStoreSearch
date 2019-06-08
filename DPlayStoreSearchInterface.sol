@@ -2,6 +2,14 @@ pragma solidity ^0.5.9;
 
 interface DPlayStoreSearchInterface {
 	
+	// 키워드 정보
+	struct GameKeywords {
+		string keyword1;
+		string keyword2;
+		string keyword3;
+		string keyword4;
+	}
+	
 	/*// 게임 ID들을 최신 순으로 가져옵니다.
 	function getGameIdsNewest() external view returns (uint[] memory);
 	

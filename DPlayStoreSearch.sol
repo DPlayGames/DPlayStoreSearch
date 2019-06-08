@@ -8,6 +8,8 @@ import "./Util/SafeMath.sol";
 contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 	using SafeMath for uint;
 	
+	mapping(uint => mapping(string => GameKeywords)) private gameIdToLanguageToKeywords;
+	
 	DPlayStoreInterface private dplayStore;
 	
 	constructor() NetworkChecker() public {
@@ -24,6 +26,26 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		} else {
 			revert();
 		}
+	}
+	
+	// 언어별로 게임의 키워드를 입력합니다.
+	function setGameDetails(
+		uint gameId,
+		string calldata language,
+		string calldata keyword1,
+		string calldata keyword2,
+		string calldata keyword3,
+		string calldata keyword4) external {
+		
+		// 게임의 배포자인 경우에만
+		require(dplayStore.checkIsPublisher(msg.sender, gameId) == true);
+		
+		gameIdToLanguageToKeywords[gameId][language] = GameKeywords({
+			keyword1 : keyword1,
+			keyword2 : keyword2,
+			keyword3 : keyword3,
+			keyword4 : keyword4
+		});
 	}
 	
 	// 출시된 게임 ID들을 가져옵니다.
@@ -110,11 +132,11 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 			// 평가 수가 ratingCount 이상인 경우에만
 			if (dplayStore.getRatingCount(publishedGameIds[i]) >= ratingCount) {
 				
-				uint rating = dplayStore.getRating(publishedGameIds[i]);
+				uint rating = dplayStore.getOverallRating(publishedGameIds[i]);
 				
 				uint j = gameIdCount;
 				for (; j > 0; j -= 1) {
-					if (dplayStore.getRating(gameIds[j]) <= rating) {
+					if (dplayStore.getOverallRating(gameIds[j]) <= rating) {
 						gameIds[j] = gameIds[j - 1];
 					} else {
 						break;
@@ -129,29 +151,35 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		return gameIds;
 	}
 	
-	/*
 	function checkAreSameString(string memory str1, string memory str2) internal pure returns (bool) {
 		return keccak256(abi.encodePacked(str1)) == keccak256(abi.encodePacked(str2));
 	}
 	
 	function checkKeyword(uint gameId, string memory language, string memory keyword) internal view returns (bool) {
 		
-		Game memory game = games[gameId];
+		(
+			, // publisher
+			, // isPublished
+			, // price
+			, // gameURL
+			, // isWebGame
+			string memory defaultLanguage,
+			, // createTime
+			  // lastUpdateTime
+		) = dplayStore.getGameInfo(gameId);
 		
-		GameDetails memory gameDetails = gameIdToLanguageToDetails[gameId][language];
-		GameDetails memory defaultLanguageGameDetails = gameIdToLanguageToDetails[gameId][game.defaultLanguage];
+		GameKeywords memory gameKeywords = gameIdToLanguageToKeywords[gameId][language];
+		GameKeywords memory defaultLanguageGameKeywords = gameIdToLanguageToKeywords[gameId][defaultLanguage];
 		
 		return
-			checkAreSameString(gameDetails.keyword1, keyword) == true ||
-			checkAreSameString(gameDetails.keyword2, keyword) == true ||
-			checkAreSameString(gameDetails.keyword3, keyword) == true ||
-			checkAreSameString(gameDetails.keyword4, keyword) == true ||
-			checkAreSameString(gameDetails.keyword5, keyword) == true ||
-			checkAreSameString(defaultLanguageGameDetails.keyword1, keyword) == true ||
-			checkAreSameString(defaultLanguageGameDetails.keyword2, keyword) == true ||
-			checkAreSameString(defaultLanguageGameDetails.keyword3, keyword) == true ||
-			checkAreSameString(defaultLanguageGameDetails.keyword4, keyword) == true ||
-			checkAreSameString(defaultLanguageGameDetails.keyword5, keyword) == true;
+			checkAreSameString(gameKeywords.keyword1, keyword) == true ||
+			checkAreSameString(gameKeywords.keyword2, keyword) == true ||
+			checkAreSameString(gameKeywords.keyword3, keyword) == true ||
+			checkAreSameString(gameKeywords.keyword4, keyword) == true ||
+			checkAreSameString(defaultLanguageGameKeywords.keyword1, keyword) == true ||
+			checkAreSameString(defaultLanguageGameKeywords.keyword2, keyword) == true ||
+			checkAreSameString(defaultLanguageGameKeywords.keyword3, keyword) == true ||
+			checkAreSameString(defaultLanguageGameKeywords.keyword4, keyword) == true;
 	}
 	
 	// 키워드에 해당하는 게임 ID들을 최신 순으로 가져옵니다.
@@ -159,14 +187,25 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		
 		uint gameCount = 0;
 		
-		for (uint i = 0; i < games.length; i += 1) {
+		for (uint i = 0; i < dplayStore.getGameCount(); i += 1) {
+			
+			(
+				address publisher,
+				bool isPublished,
+				, // price
+				, // gameURL
+				, // isWebGame
+				, // defaultLanguage
+				, // createTime
+				  // lastUpdateTime
+			) = dplayStore.getGameInfo(i);
 			
 			if (
 			// 정상적인 게임 정보인지
-			games[i].publisher != address(0x0) &&
+			publisher != address(0x0) &&
 			
 			// 출시가 되었는지
-			games[i].isPublished == true &&
+			isPublished == true &&
 			
 			// 키워드에 해당하는지
 			checkKeyword(i, language, keyword) == true) {
@@ -178,14 +217,25 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		uint[] memory gameIds = new uint[](gameCount);
 		uint j = 0;
 		
-		for (uint i = games.length - 1; i >= 0; i -= 1) {
+		for (uint i = dplayStore.getGameCount() - 1; i >= 0; i -= 1) {
+			
+			(
+				address publisher,
+				bool isPublished,
+				, // price
+				, // gameURL
+				, // isWebGame
+				, // defaultLanguage
+				, // createTime
+				  // lastUpdateTime
+			) = dplayStore.getGameInfo(i);
 			
 			if (
 			// 정상적인 게임 정보인지
-			games[i].publisher != address(0x0) &&
+			publisher != address(0x0) &&
 			
 			// 출시가 되었는지
-			games[i].isPublished == true &&
+			isPublished == true &&
 			
 			// 키워드에 해당하는지
 			checkKeyword(i, language, keyword) == true) {
@@ -203,17 +253,31 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		
 		uint gameCount = 0;
 		
-		for (uint i = 0; i < games.length; i += 1) {
+		for (uint i = 0; i < dplayStore.getGameCount(); i += 1) {
+			
+			(
+				address publisher,
+				bool isPublished,
+				, // price
+				, // gameURL
+				, // isWebGame
+				, // defaultLanguage
+				, // createTime
+				  // lastUpdateTime
+			) = dplayStore.getGameInfo(i);
 			
 			if (
 			// 정상적인 게임 정보인지
-			games[i].publisher != address(0x0) &&
+			publisher != address(0x0) &&
 			
 			// 출시가 되었는지
-			games[i].isPublished == true &&
+			isPublished == true &&
+			
+			// 키워드에 해당하는지
+			checkKeyword(i, language, keyword) == true &&
 			
 			// 평가 수가 ratingCount 이상인 경우에만
-			gameIdToRatings[i].length >= ratingCount &&
+			dplayStore.getRatingCount(i) >= ratingCount &&
 			
 			// 키워드에 해당하는지
 			checkKeyword(i, language, keyword) == true) {
@@ -225,26 +289,40 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		uint[] memory gameIds = new uint[](gameCount);
 		uint gameIdCount = 0;
 		
-		for (uint i = 0; i < games.length; i += 1) {
+		for (uint i = 0; i < dplayStore.getGameCount(); i += 1) {
+			
+			(
+				address publisher,
+				bool isPublished,
+				, // price
+				, // gameURL
+				, // isWebGame
+				, // defaultLanguage
+				, // createTime
+				  // lastUpdateTime
+			) = dplayStore.getGameInfo(i);
 			
 			if (
 			// 정상적인 게임 정보인지
-			games[i].publisher != address(0x0) &&
+			publisher != address(0x0) &&
 			
 			// 출시가 되었는지
-			games[i].isPublished == true &&
+			isPublished == true &&
+			
+			// 키워드에 해당하는지
+			checkKeyword(i, language, keyword) == true &&
 			
 			// 평가 수가 ratingCount 이상인 경우에만
-			gameIdToRatings[i].length >= ratingCount &&
+			dplayStore.getRatingCount(i) >= ratingCount &&
 			
 			// 키워드에 해당하는지
 			checkKeyword(i, language, keyword) == true) {
 				
-				uint rating = getRating(i);
+				uint rating = dplayStore.getOverallRating(i);
 				
 				uint j = gameIdCount;
 				for (; j > 0; j -= 1) {
-					if (getRating(gameIds[j]) <= rating) {
+					if (dplayStore.getOverallRating(gameIds[j]) <= rating) {
 						gameIds[j] = gameIds[j - 1];
 					} else {
 						break;
@@ -257,5 +335,5 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		}
 		
 		return gameIds;
-	}*/
+	}
 }

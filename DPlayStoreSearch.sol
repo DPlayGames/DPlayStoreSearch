@@ -8,7 +8,7 @@ import "./Util/SafeMath.sol";
 contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 	using SafeMath for uint;
 	
-	mapping(uint => mapping(string => GameKeywords)) private gameIdToLanguageToKeywords;
+	mapping(uint => mapping(string => GameTags)) private gameIdToLanguageToTags;
 	
 	DPlayStoreInterface private dplayStore;
 	
@@ -28,23 +28,23 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		}
 	}
 	
-	// 언어별로 게임의 키워드를 입력합니다.
+	// 언어별로 게임의 태그를 입력합니다.
 	function setGameDetails(
 		uint gameId,
 		string calldata language,
-		string calldata keyword1,
-		string calldata keyword2,
-		string calldata keyword3,
-		string calldata keyword4) external {
+		string calldata tag1,
+		string calldata tag2,
+		string calldata tag3,
+		string calldata tag4) external {
 		
 		// 게임의 배포자인 경우에만
 		require(dplayStore.checkIsPublisher(msg.sender, gameId) == true);
 		
-		gameIdToLanguageToKeywords[gameId][language] = GameKeywords({
-			keyword1 : keyword1,
-			keyword2 : keyword2,
-			keyword3 : keyword3,
-			keyword4 : keyword4
+		gameIdToLanguageToTags[gameId][language] = GameTags({
+			tag1 : tag1,
+			tag2 : tag2,
+			tag3 : tag3,
+			tag4 : tag4
 		});
 	}
 	
@@ -171,7 +171,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		return keccak256(abi.encodePacked(str1)) == keccak256(abi.encodePacked(str2));
 	}
 	
-	function checkKeyword(uint gameId, string memory language, string memory keyword) internal view returns (bool) {
+	function checkTag(uint gameId, string memory language, string memory tag) internal view returns (bool) {
 		
 		(
 			, // publisher
@@ -184,22 +184,22 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 			  // lastUpdateTime
 		) = dplayStore.getGameInfo(gameId);
 		
-		GameKeywords memory gameKeywords = gameIdToLanguageToKeywords[gameId][language];
-		GameKeywords memory defaultLanguageGameKeywords = gameIdToLanguageToKeywords[gameId][defaultLanguage];
+		GameTags memory gameTags = gameIdToLanguageToTags[gameId][language];
+		GameTags memory defaultLanguageGameTags = gameIdToLanguageToTags[gameId][defaultLanguage];
 		
 		return
-			checkAreSameString(gameKeywords.keyword1, keyword) == true ||
-			checkAreSameString(gameKeywords.keyword2, keyword) == true ||
-			checkAreSameString(gameKeywords.keyword3, keyword) == true ||
-			checkAreSameString(gameKeywords.keyword4, keyword) == true ||
-			checkAreSameString(defaultLanguageGameKeywords.keyword1, keyword) == true ||
-			checkAreSameString(defaultLanguageGameKeywords.keyword2, keyword) == true ||
-			checkAreSameString(defaultLanguageGameKeywords.keyword3, keyword) == true ||
-			checkAreSameString(defaultLanguageGameKeywords.keyword4, keyword) == true;
+			checkAreSameString(gameTags.tag1, tag) == true ||
+			checkAreSameString(gameTags.tag2, tag) == true ||
+			checkAreSameString(gameTags.tag3, tag) == true ||
+			checkAreSameString(gameTags.tag4, tag) == true ||
+			checkAreSameString(defaultLanguageGameTags.tag1, tag) == true ||
+			checkAreSameString(defaultLanguageGameTags.tag2, tag) == true ||
+			checkAreSameString(defaultLanguageGameTags.tag3, tag) == true ||
+			checkAreSameString(defaultLanguageGameTags.tag4, tag) == true;
 	}
 	
-	// 키워드에 해당하는 게임 ID들을 최신 순으로 가져옵니다.
-	function getGameIdsByKeywordNewest(string calldata language, string calldata keyword) external view returns (uint[] memory) {
+	// 태그에 해당하는 게임 ID들을 최신 순으로 가져옵니다.
+	function getGameIdsByTagNewest(string calldata language, string calldata tag) external view returns (uint[] memory) {
 		
 		uint[] memory publishedGameIds = getPublishedGameIds();
 		
@@ -207,8 +207,8 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		
 		for (uint i = publishedGameIds.length - 1; i >= 0; i -= 1) {
 			
-			// 키워드에 해당하는지
-			if (checkKeyword(publishedGameIds[i], language, keyword) == true) {
+			// 태그에 해당하는지
+			if (checkTag(publishedGameIds[i], language, tag) == true) {
 				
 				gameCount += 1;
 			}
@@ -219,8 +219,8 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		
 		for (uint i = publishedGameIds.length - 1; i >= 0; i -= 1) {
 			
-			// 키워드에 해당하는지
-			if (checkKeyword(publishedGameIds[i], language, keyword) == true) {
+			// 태그에 해당하는지
+			if (checkTag(publishedGameIds[i], language, tag) == true) {
 				
 				gameIds[j] = publishedGameIds[i];
 				j += 1;
@@ -230,8 +230,8 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		return gameIds;
 	}
 	
-	// 키워드에 해당하는 게임 ID들을 높은 점수 순으로 가져오되, 평가 수로 필터링합니다.
-	function getGameIdsByKeywordAndRating(string calldata language, string calldata keyword, uint ratingCount) external view returns (uint[] memory) {
+	// 태그에 해당하는 게임 ID들을 높은 점수 순으로 가져오되, 평가 수로 필터링합니다.
+	function getGameIdsByTagAndRating(string calldata language, string calldata tag, uint ratingCount) external view returns (uint[] memory) {
 		
 		uint[] memory publishedGameIds = getPublishedGameIds();
 		
@@ -243,8 +243,8 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 			// 평가 수가 ratingCount 이상인 경우에만
 			dplayStore.getRatingCount(publishedGameIds[i]) >= ratingCount &&
 			
-			// 키워드에 해당하는지
-			checkKeyword(publishedGameIds[i], language, keyword) == true) {
+			// 태그에 해당하는지
+			checkTag(publishedGameIds[i], language, tag) == true) {
 				
 				gameCount += 1;
 			}
@@ -259,8 +259,8 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 			// 평가 수가 ratingCount 이상인 경우에만
 			dplayStore.getRatingCount(publishedGameIds[i]) >= ratingCount &&
 			
-			// 키워드에 해당하는지
-			checkKeyword(publishedGameIds[i], language, keyword) == true) {
+			// 태그에 해당하는지
+			checkTag(publishedGameIds[i], language, tag) == true) {
 				
 				uint rating = dplayStore.getOverallRating(publishedGameIds[i]);
 				

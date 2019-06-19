@@ -19,7 +19,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		if (network == Network.Mainnet) {
 			//TODO
 		} else if (network == Network.Kovan) {
-			dplayStore = DPlayStoreInterface(0xfBA183939161ae03996b094F9DD67473b7e8F855);
+			dplayStore = DPlayStoreInterface(0x3D8E940e9b7cD7ae52BFce54b1C92C4b33EE6b82);
 		} else if (network == Network.Ropsten) {
 			//TODO
 		} else if (network == Network.Rinkeby) {
@@ -119,13 +119,13 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 	// 게임 ID들을 최신 순으로 가져옵니다.
 	function getGameIdsNewest() external view returns (uint[] memory) {
 		
-		uint[] memory publishedGameIds = getPublishedGameIds();
+		uint[] memory releasedGameIds = getReleasedGameIds();
 		
-		uint[] memory gameIds = new uint[](publishedGameIds.length);
+		uint[] memory gameIds = new uint[](releasedGameIds.length);
 		uint j = 0;
 		
-		for (uint i = publishedGameIds.length - 1; i >= 0; i -= 1) {
-			gameIds[j] = publishedGameIds[i];
+		for (uint i = releasedGameIds.length - 1; i >= 0; i -= 1) {
+			gameIds[j] = releasedGameIds[i];
 			j += 1;
 		}
 		
@@ -136,15 +136,15 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 	// 게임 ID들을 높은 점수 순으로 가져오되, 평가 수로 필터링합니다.
 	function getGameIdsByRating(uint ratingCount) external view returns (uint[] memory) {
 		
-		uint[] memory publishedGameIds = getPublishedGameIds();
+		uint[] memory releasedGameIds = getReleasedGameIds();
 		
 		uint gameCount = 0;
 		
-		for (uint i = 0; i < publishedGameIds.length; i += 1) {
+		for (uint i = 0; i < releasedGameIds.length; i += 1) {
 			
 			// 평가 수가 ratingCount 이상인 경우에만
 			// The number of ratings must be higher than ratingCount.
-			if (dplayStore.getRatingCount(publishedGameIds[i]) >= ratingCount) {
+			if (dplayStore.getRatingCount(releasedGameIds[i]) >= ratingCount) {
 				
 				gameCount += 1;
 			}
@@ -153,13 +153,13 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		uint[] memory gameIds = new uint[](gameCount);
 		uint gameIdCount = 0;
 		
-		for (uint i = 0; i < publishedGameIds.length; i += 1) {
+		for (uint i = 0; i < releasedGameIds.length; i += 1) {
 			
 			// The number of ratings must be higher than ratingCount.
 			// 평가 수가 ratingCount 이상인 경우에만
-			if (dplayStore.getRatingCount(publishedGameIds[i]) >= ratingCount) {
+			if (dplayStore.getRatingCount(releasedGameIds[i]) >= ratingCount) {
 				
-				uint rating = dplayStore.getOverallRating(publishedGameIds[i]);
+				uint rating = dplayStore.getOverallRating(releasedGameIds[i]);
 				
 				uint j = gameIdCount;
 				for (; j > 0; j -= 1) {
@@ -213,15 +213,15 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 	// 태그에 해당하는 게임 ID들을 최신 순으로 가져옵니다.
 	function getGameIdsByTagNewest(string calldata language, string calldata tag) external view returns (uint[] memory) {
 		
-		uint[] memory publishedGameIds = getPublishedGameIds();
+		uint[] memory releasedGameIds = getReleasedGameIds();
 		
 		uint gameCount = 0;
 		
-		for (uint i = publishedGameIds.length - 1; i >= 0; i -= 1) {
+		for (uint i = releasedGameIds.length - 1; i >= 0; i -= 1) {
 			
 			// Checks if the game's related to the tags.
 			// 태그에 해당하는지
-			if (checkTag(publishedGameIds[i], language, tag) == true) {
+			if (checkTag(releasedGameIds[i], language, tag) == true) {
 				
 				gameCount += 1;
 			}
@@ -230,13 +230,13 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		uint[] memory gameIds = new uint[](gameCount);
 		uint j = 0;
 		
-		for (uint i = publishedGameIds.length - 1; i >= 0; i -= 1) {
+		for (uint i = releasedGameIds.length - 1; i >= 0; i -= 1) {
 			
 			// Checks if the game's related to the tags.
 			// 태그에 해당하는지
-			if (checkTag(publishedGameIds[i], language, tag) == true) {
+			if (checkTag(releasedGameIds[i], language, tag) == true) {
 				
-				gameIds[j] = publishedGameIds[i];
+				gameIds[j] = releasedGameIds[i];
 				j += 1;
 			}
 		}
@@ -248,20 +248,20 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 	// 태그에 해당하는 게임 ID들을 높은 점수 순으로 가져오되, 평가 수로 필터링합니다.
 	function getGameIdsByTagAndRating(string calldata language, string calldata tag, uint ratingCount) external view returns (uint[] memory) {
 		
-		uint[] memory publishedGameIds = getPublishedGameIds();
+		uint[] memory releasedGameIds = getReleasedGameIds();
 		
 		uint gameCount = 0;
 		
-		for (uint i = 0; i < publishedGameIds.length; i += 1) {
+		for (uint i = 0; i < releasedGameIds.length; i += 1) {
 			
 			if (
 			// The number of ratings should be higher than ratingCount.
 			// 평가 수가 ratingCount 이상인 경우에만			
-			dplayStore.getRatingCount(publishedGameIds[i]) >= ratingCount &&
+			dplayStore.getRatingCount(releasedGameIds[i]) >= ratingCount &&
 						
 			// Checks if the game's related to the tags.
 			// 태그에 해당하는지
-			checkTag(publishedGameIds[i], language, tag) == true) {
+			checkTag(releasedGameIds[i], language, tag) == true) {
 				
 				gameCount += 1;
 			}
@@ -270,19 +270,19 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		uint[] memory gameIds = new uint[](gameCount);
 		uint gameIdCount = 0;
 		
-		for (uint i = 0; i < publishedGameIds.length; i += 1) {
+		for (uint i = 0; i < releasedGameIds.length; i += 1) {
 			
 			if (
 			// The nuumber of ratings must be higher than ratingCount.
 			// 평가 수가 ratingCount 이상인 경우에만
-			dplayStore.getRatingCount(publishedGameIds[i]) >= ratingCount &&
+			dplayStore.getRatingCount(releasedGameIds[i]) >= ratingCount &&
 			
 			
 			// Checks if the game's related to the tags.
 			// 태그에 해당하는지
-			checkTag(publishedGameIds[i], language, tag) == true) {
+			checkTag(releasedGameIds[i], language, tag) == true) {
 				
-				uint rating = dplayStore.getOverallRating(publishedGameIds[i]);
+				uint rating = dplayStore.getOverallRating(releasedGameIds[i]);
 				
 				uint j = gameIdCount;
 				for (; j > 0; j -= 1) {
@@ -293,7 +293,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 					}
 				}
 				
-				gameIds[j] = publishedGameIds[i];
+				gameIds[j] = releasedGameIds[i];
 				gameIdCount += 1;
 			}
 		}

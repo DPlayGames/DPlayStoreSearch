@@ -23,7 +23,7 @@ interface DPlayStoreSearchInterface {
 	
 	// Gets the IDs of the released games.
 	// 출시된 게임 ID들을 가져옵니다.
-	function getPublishedGameIds() external view returns (uint[] memory);
+	function getReleasedGameIds() external view returns (uint[] memory);
 	
 	// Gets the game IDs and sort them in the chronological order.
 	// 게임 ID들을 최신 순으로 가져옵니다.

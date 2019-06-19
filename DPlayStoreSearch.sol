@@ -15,6 +15,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 	constructor() NetworkChecker() public {
 		
 		// DPlay Store 스마트 계약을 불러옵니다.
+		// Loads the smart contract of DPlay Store.
 		if (network == Network.Mainnet) {
 			//TODO
 		} else if (network == Network.Kovan) {
@@ -29,6 +30,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 	}
 	
 	// 언어별로 게임의 태그를 입력합니다.
+	// Sets the tags of a game for each language.
 	function setGameDetails(
 		uint gameId,
 		string calldata language,
@@ -49,7 +51,8 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 	}
 	
 	// 출시된 게임 ID들을 가져옵니다.
-	function getPublishedGameIds() public view returns (uint[] memory) {
+	// Gets the IDs of released games.
+	function getReleasedGameIds() public view returns (uint[] memory) {
 		
 		uint gameCount = 0;
 		
@@ -57,7 +60,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 			
 			(
 				address publisher,
-				bool isPublished,
+				bool isReleased,
 				, // price
 				, // gameURL
 				, // isWebGame
@@ -71,7 +74,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 			publisher != address(0x0) &&
 			
 			// 출시가 되었는지
-			isPublished == true) {
+			isReleased == true) {
 				
 				gameCount += 1;
 			}
@@ -84,7 +87,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 			
 			(
 				address publisher,
-				bool isPublished,
+				bool isReleased,
 				, // price
 				, // gameURL
 				, // isWebGame
@@ -98,7 +101,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 			publisher != address(0x0) &&
 			
 			// 출시가 되었는지
-			isPublished == true) {
+			isReleased == true) {
 				
 				gameIds[j] = i;
 				j += 1;
@@ -109,6 +112,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 	}
 	
 	// 게임 ID들을 최신 순으로 가져옵니다.
+	// Gets game IDs and sort them in the chronological order.
 	function getGameIdsNewest() external view returns (uint[] memory) {
 		
 		uint[] memory publishedGameIds = getPublishedGameIds();
@@ -125,6 +129,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 	}
 	
 	// 게임 ID들을 높은 점수 순으로 가져오되, 평가 수로 필터링합니다.
+	// Gets game IDs, exclude the games with the low number of ratings and sort the unexcluded games in the descending rating order.
 	function getGameIdsByRating(uint ratingCount) external view returns (uint[] memory) {
 		
 		uint[] memory publishedGameIds = getPublishedGameIds();
@@ -134,6 +139,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		for (uint i = 0; i < publishedGameIds.length; i += 1) {
 			
 			// 평가 수가 ratingCount 이상인 경우에만
+			// The number of ratings must be higher than ratingCount.
 			if (dplayStore.getRatingCount(publishedGameIds[i]) >= ratingCount) {
 				
 				gameCount += 1;
@@ -146,6 +152,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		for (uint i = 0; i < publishedGameIds.length; i += 1) {
 			
 			// 평가 수가 ratingCount 이상인 경우에만
+			// The number of ratings must be higher than ratingCount.
 			if (dplayStore.getRatingCount(publishedGameIds[i]) >= ratingCount) {
 				
 				uint rating = dplayStore.getOverallRating(publishedGameIds[i]);
@@ -199,6 +206,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 	}
 	
 	// 태그에 해당하는 게임 ID들을 최신 순으로 가져옵니다.
+	// Gets Game IDs based on the tags and sort them in the chronological order.
 	function getGameIdsByTagNewest(string calldata language, string calldata tag) external view returns (uint[] memory) {
 		
 		uint[] memory publishedGameIds = getPublishedGameIds();
@@ -208,6 +216,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		for (uint i = publishedGameIds.length - 1; i >= 0; i -= 1) {
 			
 			// 태그에 해당하는지
+			// Checks if the game's related to the tags.
 			if (checkTag(publishedGameIds[i], language, tag) == true) {
 				
 				gameCount += 1;
@@ -220,6 +229,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		for (uint i = publishedGameIds.length - 1; i >= 0; i -= 1) {
 			
 			// 태그에 해당하는지
+			// Checks if the game's related to the tags.
 			if (checkTag(publishedGameIds[i], language, tag) == true) {
 				
 				gameIds[j] = publishedGameIds[i];
@@ -231,6 +241,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 	}
 	
 	// 태그에 해당하는 게임 ID들을 높은 점수 순으로 가져오되, 평가 수로 필터링합니다.
+	// Get game IDs based on the tags, exclude the games with the low number of ratings and sort the unexcluded games in the descending rating order.
 	function getGameIdsByTagAndRating(string calldata language, string calldata tag, uint ratingCount) external view returns (uint[] memory) {
 		
 		uint[] memory publishedGameIds = getPublishedGameIds();
@@ -241,9 +252,11 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 			
 			if (
 			// 평가 수가 ratingCount 이상인 경우에만
+			// The number of ratings should be higher than ratingCount.
 			dplayStore.getRatingCount(publishedGameIds[i]) >= ratingCount &&
 			
 			// 태그에 해당하는지
+			// Checks if the game's related to the tags.
 			checkTag(publishedGameIds[i], language, tag) == true) {
 				
 				gameCount += 1;
@@ -257,9 +270,11 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 			
 			if (
 			// 평가 수가 ratingCount 이상인 경우에만
+			// The nuumber of ratings must be higher than ratingCount.
 			dplayStore.getRatingCount(publishedGameIds[i]) >= ratingCount &&
 			
 			// 태그에 해당하는지
+			// Checks if the game's related to the tags.
 			checkTag(publishedGameIds[i], language, tag) == true) {
 				
 				uint rating = dplayStore.getOverallRating(publishedGameIds[i]);

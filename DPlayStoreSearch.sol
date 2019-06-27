@@ -19,7 +19,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		if (network == Network.Mainnet) {
 			//TODO
 		} else if (network == Network.Kovan) {
-			dplayStore = DPlayStoreInterface(0xa5Ae4d63A11Bda65403Ad63f7c329DF5f53eb896);
+			dplayStore = DPlayStoreInterface(0x0191f2EFAcA986Ec5dc136987E0dAC05Bc804A0C);
 		} else if (network == Network.Ropsten) {
 			//TODO
 		} else if (network == Network.Rinkeby) {

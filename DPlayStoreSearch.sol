@@ -30,8 +30,8 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 	}
 	
 	// Sets the tags of a game for each language.
-	// 언어별로 게임의 태그를 입력합니다.
-	function setGameDetails(
+	// 언어별로 게임의 태그들을 입력합니다.
+	function setGameTags(
 		uint gameId,
 		string calldata language,
 		string calldata tag1,
@@ -48,6 +48,24 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 			tag3 : tag3,
 			tag4 : tag4
 		});
+	}
+	
+	// 게임의 태그들을 가져옵니다.
+	function getGameTags(uint gameId, string calldata language) external view returns (
+		string memory tag1,
+		string memory tag2,
+		string memory tag3,
+		string memory tag4
+	) {
+		
+		GameTags memory gameTags = gameIdToLanguageToTags[gameId][language];
+		
+		return (
+			gameTags.tag1,
+			gameTags.tag2,
+			gameTags.tag3,
+			gameTags.tag4
+		);
 	}
 	
 	// Gets the IDs of released games.
@@ -124,8 +142,8 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		uint[] memory gameIds = new uint[](releasedGameIds.length);
 		uint j = 0;
 		
-		for (uint i = releasedGameIds.length - 1; i >= 0; i -= 1) {
-			gameIds[j] = releasedGameIds[i];
+		for (uint i = releasedGameIds.length; i > 0; i -= 1) {
+			gameIds[j] = releasedGameIds[i - 1];
 			j += 1;
 		}
 		
@@ -217,11 +235,11 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		
 		uint gameCount = 0;
 		
-		for (uint i = releasedGameIds.length - 1; i >= 0; i -= 1) {
+		for (uint i = releasedGameIds.length; i > 0; i -= 1) {
 			
 			// Checks if the game's related to the tags.
 			// 태그에 해당하는지
-			if (checkTag(releasedGameIds[i], language, tag) == true) {
+			if (checkTag(releasedGameIds[i - 1], language, tag) == true) {
 				
 				gameCount += 1;
 			}
@@ -230,13 +248,13 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		uint[] memory gameIds = new uint[](gameCount);
 		uint j = 0;
 		
-		for (uint i = releasedGameIds.length - 1; i >= 0; i -= 1) {
+		for (uint i = releasedGameIds.length; i > 0; i -= 1) {
 			
 			// Checks if the game's related to the tags.
 			// 태그에 해당하는지
-			if (checkTag(releasedGameIds[i], language, tag) == true) {
+			if (checkTag(releasedGameIds[i - 1], language, tag) == true) {
 				
-				gameIds[j] = releasedGameIds[i];
+				gameIds[j] = releasedGameIds[i - 1];
 				j += 1;
 			}
 		}

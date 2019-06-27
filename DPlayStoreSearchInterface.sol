@@ -12,14 +12,22 @@ interface DPlayStoreSearchInterface {
 	}
 	
 	// Sets the tags of a game for each language.
-	// 언어별로 게임의 태그를 입력합니다.
-	function setGameDetails(
+	// 언어별로 게임의 태그들을 입력합니다.
+	function setGameTags(
 		uint gameId,
 		string calldata language,
 		string calldata tag1,
 		string calldata tag2,
 		string calldata tag3,
 		string calldata tag4) external;
+	
+	// 게임의 태그들을 가져옵니다.
+	function getGameTags(uint gameId, string calldata language) external view returns (
+		string memory tag1,
+		string memory tag2,
+		string memory tag3,
+		string memory tag4
+	);
 	
 	// Gets the IDs of the released games.
 	// 출시된 게임 ID들을 가져옵니다.

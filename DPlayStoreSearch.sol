@@ -50,6 +50,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		});
 	}
 	
+	// Gets the tags of the given game.
 	// 게임의 태그들을 가져옵니다.
 	function getGameTags(uint gameId, string calldata language) external view returns (
 		string memory tag1,

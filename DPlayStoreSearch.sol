@@ -136,8 +136,8 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		return gameIds;
 	}
 	
-	// Gets game IDs and sort them in the chronological order.
-	// 게임 ID들을 최신 순으로 가져옵니다.
+	// Gets game IDs and sort by the release date.
+	// 게임 ID들을 출시 순으로 가져옵니다.
 	function getGameIdsNewest() external view returns (uint[] memory) {
 		
 		uint[] memory releasedGameIds = getReleasedGameIds();
@@ -266,8 +266,8 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 			checkAreSameString(defaultLanguageGameTags.tag4, tag) == true;
 	}
 	
-	// Gets Game IDs based on the tags and sort them in the chronological order.
-	// 태그에 해당하는 게임 ID들을 최신 순으로 가져옵니다.
+	// Gets Game IDs based on the tags and sort by release date.
+	// 태그에 해당하는 게임 ID들을 출시 순으로 가져옵니다.
 	function getGameIdsByTagNewest(string calldata language, string calldata tag) external view returns (uint[] memory) {
 		
 		uint[] memory releasedGameIds = getReleasedGameIds();

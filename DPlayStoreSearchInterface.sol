@@ -34,16 +34,16 @@ interface DPlayStoreSearchInterface {
 	// 출시된 게임 ID들을 가져옵니다.
 	function getReleasedGameIds() external view returns (uint[] memory);
 	
-	// Gets the game IDs and sort them in the chronological order.
-	// 게임 ID들을 최신 순으로 가져옵니다.
+	// Gets the game IDs and sort by release date.
+	// 게임 ID들을 출시 순으로 가져옵니다.
 	function getGameIdsNewest() external view returns (uint[] memory);
 		
 	// Gets game IDs, exclude the games with the low number of ratings and sort the unexcluded games in the descending rating order.
 	// 게임 ID들을 높은 점수 순으로 가져오되, 평가 수로 필터링합니다.
 	function getGameIdsByRating(uint ratingCount) external view returns (uint[] memory);
 	
-	// Gets Game IDs based on the tags and sort them in the chronological order.
-	// 태그에 해당하는 게임 ID들을 최신 순으로 가져옵니다.
+	// Gets Game IDs based on the tags and sort by release date.
+	// 태그에 해당하는 게임 ID들을 출시 순으로 가져옵니다.
 	function getGameIdsByTagNewest(string calldata language, string calldata tag) external view returns (uint[] memory);
 	
 	// Get game IDs based on the tags, exclude the games with the low number of ratings and sort the unexcluded games in the descending rating order.

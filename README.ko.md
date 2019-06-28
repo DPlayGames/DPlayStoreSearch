@@ -1,7 +1,7 @@
 # DPlay Store Search
 
 ## 계약 주소
-- Kovan: 0x13a8f9F88ee7E7F45F197892ef8Ed3E17DE3aa7A
+- Kovan: 0xEb854DA8d55BC539633790769b9BB742A372f53F
 
 ## 테스트 여부
 - ![테스트 여부](https://img.shields.io/badge/테스트%20여부-yes-brightgreen.svg) `function setGameTags(uint gameId, string calldata language, string calldata tag1, string calldata tag2, string calldata tag3, string calldata tag4) external`

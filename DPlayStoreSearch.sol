@@ -19,7 +19,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		if (network == Network.Mainnet) {
 			//TODO
 		} else if (network == Network.Kovan) {
-			dplayStore = DPlayStoreInterface(0x0191f2EFAcA986Ec5dc136987E0dAC05Bc804A0C);
+			dplayStore = DPlayStoreInterface(0xaa13eD0564DF5019E2DD5E09f03b5Abd31bC832D);
 		} else if (network == Network.Ropsten) {
 			//TODO
 		} else if (network == Network.Rinkeby) {
@@ -85,7 +85,8 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 				, // isWebGame
 				, // defaultLanguage
 				, // createTime
-				  // lastUpdateTime
+				, // lastUpdateTime
+				// releaseTime
 			) = dplayStore.getGameInfo(i);
 			
 			if (
@@ -114,7 +115,8 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 				, // isWebGame
 				, // defaultLanguage
 				, // createTime
-				  // lastUpdateTime
+				, // lastUpdateTime
+				// releaseTime
 			) = dplayStore.getGameInfo(i);
 			
 			if (
@@ -141,11 +143,46 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		uint[] memory releasedGameIds = getReleasedGameIds();
 		
 		uint[] memory gameIds = new uint[](releasedGameIds.length);
-		uint j = 0;
+		uint gameIdCount = 0;
 		
-		for (uint i = releasedGameIds.length; i > 0; i -= 1) {
-			gameIds[j] = releasedGameIds[i - 1];
-			j += 1;
+		for (uint i = 0; i < releasedGameIds.length; i += 1) {
+			
+			(
+				, // publisher
+				, // isReleased
+				, // price
+				, // gameURL
+				, // isWebGame
+				, // defaultLanguage
+				, // createTime
+				, // lastUpdateTime
+				uint releaseTime
+			) = dplayStore.getGameInfo(releasedGameIds[i]);
+			
+			uint j = gameIdCount;
+			for (; j > 0; j -= 1) {
+				
+				(
+					, // publisherW
+					, // isReleased
+					, // price
+					, // gameURL
+					, // isWebGame
+					, // defaultLanguage
+					, // createTime
+					, // lastUpdateTime
+					uint releaseTime2
+				) = dplayStore.getGameInfo(gameIds[j]);
+				
+				if (releaseTime2 <= releaseTime) {
+					gameIds[j] = gameIds[j - 1];
+				} else {
+					break;
+				}
+			}
+			
+			gameIds[j] = releasedGameIds[i];
+			gameIdCount += 1;
 		}
 		
 		return gameIds;
@@ -189,7 +226,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 					}
 				}
 				
-				gameIds[j] = i;
+				gameIds[j] = releasedGameIds[i];
 				gameIdCount += 1;
 			}
 		}
@@ -211,7 +248,8 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 			, // isWebGame
 			string memory defaultLanguage,
 			, // createTime
-			  // lastUpdateTime
+			, // lastUpdateTime
+			// releaseTime
 		) = dplayStore.getGameInfo(gameId);
 		
 		GameTags memory gameTags = gameIdToLanguageToTags[gameId][language];
@@ -247,16 +285,50 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		}
 		
 		uint[] memory gameIds = new uint[](gameCount);
-		uint j = 0;
+		uint gameIdCount = 0;
 		
-		for (uint i = releasedGameIds.length; i > 0; i -= 1) {
+		for (uint i = 0; i < releasedGameIds.length; i += 1) {
 			
 			// Checks if the game's related to the tags.
 			// 태그에 해당하는지
 			if (checkTag(releasedGameIds[i - 1], language, tag) == true) {
 				
-				gameIds[j] = releasedGameIds[i - 1];
-				j += 1;
+				(
+					, // publisher
+					, // isReleased
+					, // price
+					, // gameURL
+					, // isWebGame
+					, // defaultLanguage
+					, // createTime
+					, // lastUpdateTime
+					uint releaseTime
+				) = dplayStore.getGameInfo(releasedGameIds[i]);
+				
+				uint j = gameIdCount;
+				for (; j > 0; j -= 1) {
+					
+					(
+						, // publisherW
+						, // isReleased
+						, // price
+						, // gameURL
+						, // isWebGame
+						, // defaultLanguage
+						, // createTime
+						, // lastUpdateTime
+						uint releaseTime2
+					) = dplayStore.getGameInfo(gameIds[j]);
+					
+					if (releaseTime2 <= releaseTime) {
+						gameIds[j] = gameIds[j - 1];
+					} else {
+						break;
+					}
+				}
+				
+				gameIds[j] = releasedGameIds[i];
+				gameIdCount += 1;
 			}
 		}
 		
@@ -295,7 +367,6 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 			// The nuumber of ratings must be higher than ratingCount.
 			// 평가 수가 ratingCount 이상인 경우에만
 			dplayStore.getRatingCount(releasedGameIds[i]) >= ratingCount &&
-			
 			
 			// Checks if the game's related to the tags.
 			// 태그에 해당하는지

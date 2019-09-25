@@ -198,8 +198,8 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		
 		for (uint i = 0; i < releasedGameIds.length; i += 1) {
 			
-			// 평가 수가 ratingCount 이상인 경우에만
 			// The number of ratings must be higher than ratingCount.
+			// 평가 수가 ratingCount 이상인 경우에만
 			if (dplayStore.getRatingCount(releasedGameIds[i]) >= ratingCount) {
 				
 				gameCount += 1;
@@ -233,12 +233,79 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		
 		return gameIds;
 	}
+		
+	// 웹 게임 ID들을 높은 점수 순으로 가져오되, 평가 수로 필터링합니다.
+	function getWebGameIdsByRating(uint ratingCount) external view returns (uint[] memory) {
+		
+		uint[] memory releasedGameIds = getReleasedGameIds();
+		
+		uint gameCount = 0;
+		
+		for (uint i = 0; i < releasedGameIds.length; i += 1) {
+			
+			(
+				,
+				,
+				,
+				,
+				bool isWebGame,
+				,
+				,
+				,
+				
+			) = dplayStore.getGameInfo(releasedGameIds[i]);
+			
+			// 웹 게임이고, 평가 수가 ratingCount 이상인 경우에만
+			if (isWebGame == true && dplayStore.getRatingCount(releasedGameIds[i]) >= ratingCount) {
+				
+				gameCount += 1;
+			}
+		}
+		
+		uint[] memory gameIds = new uint[](gameCount);
+		uint gameIdCount = 0;
+		
+		for (uint i = 0; i < releasedGameIds.length; i += 1) {
+			
+			(
+				,
+				,
+				,
+				,
+				bool isWebGame,
+				,
+				,
+				,
+				
+			) = dplayStore.getGameInfo(releasedGameIds[i]);
+			
+			// 웹 게임이고, 평가 수가 ratingCount 이상인 경우에만
+			if (isWebGame == true && dplayStore.getRatingCount(releasedGameIds[i]) >= ratingCount) {
+				
+				uint rating = dplayStore.getOverallRating(releasedGameIds[i]);
+				
+				uint j = gameIdCount;
+				for (; j > 0; j -= 1) {
+					if (dplayStore.getOverallRating(gameIds[j]) <= rating) {
+						gameIds[j] = gameIds[j - 1];
+					} else {
+						break;
+					}
+				}
+				
+				gameIds[j] = releasedGameIds[i];
+				gameIdCount += 1;
+			}
+		}
+		
+		return gameIds;
+	}
 	
-	function checkAreSameString(string memory str1, string memory str2) internal pure returns (bool) {
+	function checkAreSameString(string memory str1, string memory str2) private pure returns (bool) {
 		return keccak256(abi.encodePacked(str1)) == keccak256(abi.encodePacked(str2));
 	}
 	
-	function checkTag(uint gameId, string memory language, string memory tag) internal view returns (bool) {
+	function checkTag(uint gameId, string memory language, string memory tag) private view returns (bool) {
 		
 		(
 			, // publisher

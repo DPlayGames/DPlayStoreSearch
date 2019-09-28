@@ -42,6 +42,9 @@ interface DPlayStoreSearchInterface {
 	// 게임 ID들을 높은 점수 순으로 가져오되, 평가 수로 필터링합니다.
 	function getGameIdsByRating(uint ratingCount) external view returns (uint[] memory);
 	
+	// 웹 게임 ID들을 높은 점수 순으로 가져오되, 평가 수로 필터링합니다.
+	function getWebGameIdsByRating(uint ratingCount) external view returns (uint[] memory);
+	
 	// Gets Game IDs based on the tags and sort by release date.
 	// 태그에 해당하는 게임 ID들을 출시 순으로 가져옵니다.
 	function getGameIdsByTagNewest(string calldata language, string calldata tag) external view returns (uint[] memory);

@@ -2,6 +2,7 @@ pragma solidity ^0.5.9;
 
 import "./DPlayStoreSearchInterface.sol";
 import "./DPlayStoreInterface.sol";
+import "./DPlayCriticInterface.sol";
 import "./Util/NetworkChecker.sol";
 import "./Util/SafeMath.sol";
 
@@ -11,6 +12,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 	mapping(uint => mapping(string => GameTags)) private gameIdToLanguageToTags;
 	
 	DPlayStoreInterface private dplayStore;
+	DPlayCriticInterface private dplayCritic;
 	
 	constructor() NetworkChecker() public {
 		
@@ -20,6 +22,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 			//TODO
 		} else if (network == Network.Kovan) {
 			dplayStore = DPlayStoreInterface(0x4d907141549bA4D311fEdDB3B0aDa6bA71587f27);
+			dplayCritic = DPlayCriticInterface(0x9D787c1eD7e7b692D3a469670B75D3cfB5FbF352);
 		} else if (network == Network.Ropsten) {
 			//TODO
 		} else if (network == Network.Rinkeby) {
@@ -200,7 +203,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 			
 			// The number of ratings must be higher than ratingCount.
 			// 평가 수가 ratingCount 이상인 경우에만
-			if (dplayStore.getRatingCount(releasedGameIds[i]) >= ratingCount) {
+			if (dplayCritic.getRatingCount(releasedGameIds[i]) >= ratingCount) {
 				
 				gameCount += 1;
 			}
@@ -213,13 +216,13 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 			
 			// The number of ratings must be higher than ratingCount.
 			// 평가 수가 ratingCount 이상인 경우에만
-			if (dplayStore.getRatingCount(releasedGameIds[i]) >= ratingCount) {
+			if (dplayCritic.getRatingCount(releasedGameIds[i]) >= ratingCount) {
 				
-				uint rating = dplayStore.getOverallRating(releasedGameIds[i]);
+				uint rating = dplayCritic.getOverallRating(releasedGameIds[i]);
 				
 				uint j = gameIdCount;
 				for (; j > 0; j -= 1) {
-					if (dplayStore.getOverallRating(gameIds[j]) <= rating) {
+					if (dplayCritic.getOverallRating(gameIds[j]) <= rating) {
 						gameIds[j] = gameIds[j - 1];
 					} else {
 						break;
@@ -256,7 +259,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 			) = dplayStore.getGameInfo(releasedGameIds[i]);
 			
 			// 웹 게임이고, 평가 수가 ratingCount 이상인 경우에만
-			if (isWebGame == true && dplayStore.getRatingCount(releasedGameIds[i]) >= ratingCount) {
+			if (isWebGame == true && dplayCritic.getRatingCount(releasedGameIds[i]) >= ratingCount) {
 				
 				gameCount += 1;
 			}
@@ -280,13 +283,13 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 			) = dplayStore.getGameInfo(releasedGameIds[i]);
 			
 			// 웹 게임이고, 평가 수가 ratingCount 이상인 경우에만
-			if (isWebGame == true && dplayStore.getRatingCount(releasedGameIds[i]) >= ratingCount) {
+			if (isWebGame == true && dplayCritic.getRatingCount(releasedGameIds[i]) >= ratingCount) {
 				
-				uint rating = dplayStore.getOverallRating(releasedGameIds[i]);
+				uint rating = dplayCritic.getOverallRating(releasedGameIds[i]);
 				
 				uint j = gameIdCount;
 				for (; j > 0; j -= 1) {
-					if (dplayStore.getOverallRating(gameIds[j]) <= rating) {
+					if (dplayCritic.getOverallRating(gameIds[j]) <= rating) {
 						gameIds[j] = gameIds[j - 1];
 					} else {
 						break;
@@ -415,7 +418,7 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 			if (
 			// The number of ratings should be higher than ratingCount.
 			// 평가 수가 ratingCount 이상인 경우에만			
-			dplayStore.getRatingCount(releasedGameIds[i]) >= ratingCount &&
+			dplayCritic.getRatingCount(releasedGameIds[i]) >= ratingCount &&
 						
 			// Checks if the game's related to the tags.
 			// 태그에 해당하는지
@@ -433,17 +436,17 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 			if (
 			// The nuumber of ratings must be higher than ratingCount.
 			// 평가 수가 ratingCount 이상인 경우에만
-			dplayStore.getRatingCount(releasedGameIds[i]) >= ratingCount &&
+			dplayCritic.getRatingCount(releasedGameIds[i]) >= ratingCount &&
 			
 			// Checks if the game's related to the tags.
 			// 태그에 해당하는지
 			checkTag(releasedGameIds[i], language, tag) == true) {
 				
-				uint rating = dplayStore.getOverallRating(releasedGameIds[i]);
+				uint rating = dplayCritic.getOverallRating(releasedGameIds[i]);
 				
 				uint j = gameIdCount;
 				for (; j > 0; j -= 1) {
-					if (dplayStore.getOverallRating(gameIds[j]) <= rating) {
+					if (dplayCritic.getOverallRating(gameIds[j]) <= rating) {
 						gameIds[j] = gameIds[j - 1];
 					} else {
 						break;

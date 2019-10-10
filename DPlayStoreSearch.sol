@@ -19,14 +19,17 @@ contract DPlayStoreSearch is DPlayStoreSearchInterface, NetworkChecker {
 		// Loads the smart contract of DPlay Store.
 		// DPlay Store 스마트 계약을 불러옵니다.
 		if (network == Network.Mainnet) {
-			//TODO
+			dplayStore = DPlayStoreInterface(0x6AbD63da2f98dD181B30eedd0377e74DF503e55B);
+			dplayCritic = DPlayCriticInterface(0xa5e2c5Df97eBD0e45714430D122aDF3b9094AD3E);
 		} else if (network == Network.Kovan) {
-			dplayStore = DPlayStoreInterface(0x4d907141549bA4D311fEdDB3B0aDa6bA71587f27);
-			dplayCritic = DPlayCriticInterface(0x9D787c1eD7e7b692D3a469670B75D3cfB5FbF352);
+			dplayStore = DPlayStoreInterface(0x8C2E9938DBd456ac12329fC9cC566bCF0D6269B8);
+			dplayCritic = DPlayCriticInterface(0x6831b7a202Ec6F88100925867dCbcBAD10063Cc5);
 		} else if (network == Network.Ropsten) {
-			//TODO
+			dplayStore = DPlayStoreInterface(0x81Eba90B7765fda1AF6aEA03db2491cff4a243Cf);
+			dplayCritic = DPlayCriticInterface(0xEDf96b606ae6ACEC685C0f789056cAFc6BE17E74);
 		} else if (network == Network.Rinkeby) {
-			//TODO
+			dplayStore = DPlayStoreInterface(0x01DA6dAdCE4662ecB32A544D8dD6f2796Ae986a6);
+			dplayCritic = DPlayCriticInterface(0x6246B4e8129b24E96539EaAe816c932bC91D1037);
 		} else {
 			revert();
 		}
